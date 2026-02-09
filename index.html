@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Gold Tracker">
+    <title>Gold Purchase Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0A0E14;
+            --bg-card: #1A1F2E;
+            --bg-input: #252B3B;
+            --gold-primary: #D4AF37;
+            --gold-light: #F4D03F;
+            --gold-dark: #C5A028;
+            --text-primary: #E5E7EB;
+            --text-secondary: #9CA3AF;
+            --border: #374151;
+            --accent-green: #10B981;
+            --accent-red: #EF4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding-bottom: 80px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(212, 175, 55, 0.1) 100%);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid var(--gold-primary);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, var(--gold-primary), var(--gold-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 15px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            color: var(--gold-primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .container {
+            padding: 15px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            color: var(--gold-primary);
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 16px;
+            -webkit-appearance: none;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--gold-primary);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--gold-dark), var(--gold-primary));
+            color: var(--bg-dark);
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .spot-price {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.2));
+            border: 2px solid var(--gold-primary);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .spot-price-label {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+
+        .spot-price-value {
+            color: var(--gold-primary);
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .purchase-list {
+            margin-top: 20px;
+        }
+
+        .purchase-item {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+
+        .purchase-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .purchase-date {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .purchase-amount {
+            color: var(--gold-primary);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .purchase-details {
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .karat-badge {
+            display: inline-block;
+            background: var(--gold-primary);
+            color: var(--bg-dark);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            margin-right: 8px;
+        }
+
+        .delete-btn {
+            width: 100%;
+            padding: 10px;
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gold-primary);
+            color: var(--bg-dark);
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border-top: 2px solid var(--gold-primary);
+            display: flex;
+            padding: 10px;
+            z-index: 100;
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .nav-btn.active {
+            color: var(--gold-primary);
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>💰 Gold Tracker</h1>
+        <p class="subtitle">Track Your Gold Purchases</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Total Weight</div>
+            <div class="stat-value" id="totalWeight">0.00 g</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Spent</div>
+            <div class="stat-value" id="totalSpent">$0.00</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Current Value</div>
+            <div class="stat-value" id="currentValue">$0.00</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Purchases</div>
+            <div class="stat-value" id="totalPurchases">0</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="add-tab" class="tab-content active">
+            <div class="spot-price" onclick="updateSpotPrice()">
+                <div class="spot-price-label">Gold Spot Price (Tap to Update)</div>
+                <div class="spot-price-value" id="spotPrice">$2,650.00</div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">➕ Add Purchase</h2>
+                <form id="purchaseForm">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Karat</label>
+                        <select id="karat" required onchange="calculateCost()">
+                            <option value="">Select Karat</option>
+                            <option value="9K">9K (37.5%)</option>
+                            <option value="9.25K">9.25K (38.5%)</option>
+                            <option value="9.5K">9.5K (39.6%)</option>
+                            <option value="9.75K">9.75K (40.6%)</option>
+                            <option value="10K">10K (41.7%)</option>
+                            <option value="10.25K">10.25K (42.7%)</option>
+                            <option value="10.5K">10.5K (43.8%)</option>
+                            <option value="10.75K">10.75K (44.8%)</option>
+                            <option value="11K">11K (45.8%)</option>
+                            <option value="11.25K">11.25K (46.9%)</option>
+                            <option value="11.5K">11.5K (47.9%)</option>
+                            <option value="11.75K">11.75K (49.0%)</option>
+                            <option value="12K">12K (50.0%)</option>
+                            <option value="12.25K">12.25K (51.0%)</option>
+                            <option value="12.5K">12.5K (52.1%)</option>
+                            <option value="12.75K">12.75K (53.1%)</option>
+                            <option value="13K">13K (54.2%)</option>
+                            <option value="13.25K">13.25K (55.2%)</option>
+                            <option value="13.5K">13.5K (56.3%)</option>
+                            <option value="13.75K">13.75K (57.3%)</option>
+                            <option value="14K">14K (58.5%)</option>
+                            <option value="14.25K">14.25K (59.4%)</option>
+                            <option value="14.5K">14.5K (60.4%)</option>
+                            <option value="14.75K">14.75K (61.5%)</option>
+                            <option value="15K">15K (62.5%)</option>
+                            <option value="15.25K">15.25K (63.5%)</option>
+                            <option value="15.5K">15.5K (64.6%)</option>
+                            <option value="15.75K">15.75K (65.6%)</option>
+                            <option value="16K">16K (66.7%)</option>
+                            <option value="16.25K">16.25K (67.7%)</option>
+                            <option value="16.5K">16.5K (68.8%)</option>
+                            <option value="16.75K">16.75K (69.8%)</option>
+                            <option value="17K">17K (70.8%)</option>
+                            <option value="17.25K">17.25K (71.9%)</option>
+                            <option value="17.5K">17.5K (72.9%)</option>
+                            <option value="17.75K">17.75K (74.0%)</option>
+                            <option value="18K">18K (75.0%)</option>
+                            <option value="18.25K">18.25K (76.0%)</option>
+                            <option value="18.5K">18.5K (77.1%)</option>
+                            <option value="18.75K">18.75K (78.1%)</option>
+                            <option value="19K">19K (79.2%)</option>
+                            <option value="19.25K">19.25K (80.2%)</option>
+                            <option value="19.5K">19.5K (81.3%)</option>
+                            <option value="19.75K">19.75K (82.3%)</option>
+                            <option value="20K">20K (83.3%)</option>
+                            <option value="20.25K">20.25K (84.4%)</option>
+                            <option value="20.5K">20.5K (85.4%)</option>
+                            <option value="20.75K">20.75K (86.5%)</option>
+                            <option value="21K">21K (87.5%)</option>
+                            <option value="21.25K">21.25K (88.5%)</option>
+                            <option value="21.5K">21.5K (89.6%)</option>
+                            <option value="21.75K">21.75K (90.6%)</option>
+                            <option value="22K">22K (91.7%)</option>
+                            <option value="22.25K">22.25K (92.7%)</option>
+                            <option value="22.5K">22.5K (93.8%)</option>
+                            <option value="22.75K">22.75K (94.8%)</option>
+                            <option value="23K">23K (95.8%)</option>
+                            <option value="23.25K">23.25K (96.9%)</option>
+                            <option value="23.5K">23.5K (97.9%)</option>
+                            <option value="23.75K">23.75K (99.0%)</option>
+                            <option value="24K">24K (99.9%)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>% of Spot Price</label>
+                        <input type="number" step="0.1" id="percentage" placeholder="e.g., 95" required oninput="calculateCost()">
+                    </div>
+                    <div class="form-group">
+                        <label>Weight (grams)</label>
+                        <input type="number" step="0.01" id="weight" placeholder="0.00" required oninput="calculateCost()">
+                    </div>
+                    <div class="form-group">
+                        <label>Total Cost ($) - Auto Calculated</label>
+                        <input type="number" step="0.01" id="cost" placeholder="0.00" required readonly style="background: rgba(212, 175, 55, 0.1); color: var(--gold-primary); font-weight: 700;">
+                    </div>
+                    <div class="form-group">
+                        <label>Store / Location</label>
+                        <input type="text" id="store" placeholder="Optional">
+                    </div>
+                    <div class="form-group">
+                        <label>Description / Notes</label>
+                        <input type="text" id="description" placeholder="Optional">
+                    </div>
+                    <button type="submit" class="btn">Add Purchase</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="list-tab" class="tab-content">
+            <div class="card">
+                <h2 class="card-title">📋 Purchase History</h2>
+                <div class="purchase-list" id="purchaseList"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-btn active" onclick="switchTab('add')">
+            <span class="nav-icon">➕</span>
+            <span>Add</span>
+        </button>
+        <button class="nav-btn" onclick="switchTab('list')">
+            <span class="nav-icon">📋</span>
+            <span>History</span>
+        </button>
+        <button class="nav-btn" onclick="exportData()">
+            <span class="nav-icon">💾</span>
+            <span>Export</span>
+        </button>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const KARAT_PURITY = {
+            '9K': 0.375,
+            '9.25K': 0.385,
+            '9.5K': 0.396,
+            '9.75K': 0.406,
+            '10K': 0.417,
+            '10.25K': 0.427,
+            '10.5K': 0.438,
+            '10.75K': 0.448,
+            '11K': 0.458,
+            '11.25K': 0.469,
+            '11.5K': 0.479,
+            '11.75K': 0.490,
+            '12K': 0.500,
+            '12.25K': 0.510,
+            '12.5K': 0.521,
+            '12.75K': 0.531,
+            '13K': 0.542,
+            '13.25K': 0.552,
+            '13.5K': 0.563,
+            '13.75K': 0.573,
+            '14K': 0.585,
+            '14.25K': 0.594,
+            '14.5K': 0.604,
+            '14.75K': 0.615,
+            '15K': 0.625,
+            '15.25K': 0.635,
+            '15.5K': 0.646,
+            '15.75K': 0.656,
+            '16K': 0.667,
+            '16.25K': 0.677,
+            '16.5K': 0.688,
+            '16.75K': 0.698,
+            '17K': 0.708,
+            '17.25K': 0.719,
+            '17.5K': 0.729,
+            '17.75K': 0.740,
+            '18K': 0.750,
+            '18.25K': 0.760,
+            '18.5K': 0.771,
+            '18.75K': 0.781,
+            '19K': 0.792,
+            '19.25K': 0.802,
+            '19.5K': 0.813,
+            '19.75K': 0.823,
+            '20K': 0.833,
+            '20.25K': 0.844,
+            '20.5K': 0.854,
+            '20.75K': 0.865,
+            '21K': 0.875,
+            '21.25K': 0.885,
+            '21.5K': 0.896,
+            '21.75K': 0.906,
+            '22K': 0.917,
+            '22.25K': 0.927,
+            '22.5K': 0.938,
+            '22.75K': 0.948,
+            '23K': 0.958,
+            '23.25K': 0.969,
+            '23.5K': 0.979,
+            '23.75K': 0.990,
+            '24K': 0.999
+        };
+
+        let purchases = [];
+        let spotPrice = 2650;
+
+        // Load data from localStorage
+        function loadData() {
+            const saved = localStorage.getItem('goldPurchases');
+            if (saved) {
+                purchases = JSON.parse(saved);
+            }
+            const savedSpot = localStorage.getItem('spotPrice');
+            if (savedSpot) {
+                spotPrice = parseFloat(savedSpot);
+                document.getElementById('spotPrice').textContent = '$' + spotPrice.toFixed(2);
+            }
+            updateStats();
+            updatePurchaseList();
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('goldPurchases', JSON.stringify(purchases));
+            localStorage.setItem('spotPrice', spotPrice);
+        }
+
+        // Calculate cost automatically based on spot, karat, weight, and percentage
+        function calculateCost() {
+            const karat = document.getElementById('karat').value;
+            const weight = parseFloat(document.getElementById('weight').value);
+            const percentage = parseFloat(document.getElementById('percentage').value);
+            
+            if (karat && weight && percentage && spotPrice) {
+                const purity = KARAT_PURITY[karat];
+                const ozPerGram = 0.03215; // Troy oz per gram
+                const pureOz = weight * purity * ozPerGram;
+                const baseValue = pureOz * spotPrice;
+                const cost = baseValue * (percentage / 100);
+                
+                document.getElementById('cost').value = cost.toFixed(2);
+            }
+        }
+
+        // Update spot price
+        function updateSpotPrice() {
+            const newPrice = prompt('Enter new spot price per oz:', spotPrice);
+            if (newPrice && !isNaN(newPrice)) {
+                spotPrice = parseFloat(newPrice);
+                document.getElementById('spotPrice').textContent = '$' + spotPrice.toFixed(2);
+                saveData();
+                calculateCost(); // Recalculate cost with new spot price
+                updateStats();
+                showToast('Spot price updated!');
+            }
+        }
+
+        // Add purchase
+        document.getElementById('purchaseForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const purchase = {
+                id: Date.now(),
+                date: document.getElementById('date').value,
+                karat: document.getElementById('karat').value,
+                weight: parseFloat(document.getElementById('weight').value),
+                percentage: parseFloat(document.getElementById('percentage').value),
+                cost: parseFloat(document.getElementById('cost').value),
+                store: document.getElementById('store').value,
+                description: document.getElementById('description').value
+            };
+
+            purchases.push(purchase);
+            saveData();
+            updateStats();
+            updatePurchaseList();
+            
+            this.reset();
+            document.getElementById('date').valueAsDate = new Date();
+            
+            showToast('Purchase added!');
+        });
+
+        // Delete purchase
+        function deletePurchase(id) {
+            if (confirm('Delete this purchase?')) {
+                purchases = purchases.filter(p => p.id !== id);
+                saveData();
+                updateStats();
+                updatePurchaseList();
+                showToast('Purchase deleted!');
+            }
+        }
+
+        // Calculate melt value
+        function calculateMeltValue(karat, weight) {
+            const purity = KARAT_PURITY[karat];
+            const ozPerGram = 0.03215;
+            const pureOz = weight * purity * ozPerGram;
+            return pureOz * spotPrice * 0.95; // 95% refinery rate
+        }
+
+        // Update stats
+        function updateStats() {
+            let totalWeight = 0;
+            let totalCost = 0;
+            let totalValue = 0;
+
+            purchases.forEach(p => {
+                totalWeight += p.weight;
+                totalCost += p.cost;
+                totalValue += calculateMeltValue(p.karat, p.weight);
+            });
+
+            document.getElementById('totalWeight').textContent = totalWeight.toFixed(2) + ' g';
+            document.getElementById('totalSpent').textContent = '$' + totalCost.toFixed(2);
+            document.getElementById('currentValue').textContent = '$' + totalValue.toFixed(2);
+            document.getElementById('totalPurchases').textContent = purchases.length;
+        }
+
+        // Update purchase list
+        function updatePurchaseList() {
+            const list = document.getElementById('purchaseList');
+            
+            if (purchases.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📦</div>
+                        <div>No purchases yet</div>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = [...purchases].reverse().map(p => `
+                <div class="purchase-item">
+                    <div class="purchase-header">
+                        <span class="purchase-date">${p.date}</span>
+                        <span class="purchase-amount">$${p.cost.toFixed(2)}</span>
+                    </div>
+                    <div class="purchase-details">
+                        <span class="karat-badge">${p.karat}</span>
+                        ${p.weight.toFixed(2)}g @ ${p.percentage}% of spot${p.store ? ' • ' + p.store : ''}<br>
+                        ${p.description || ''}
+                    </div>
+                    <button class="delete-btn" onclick="deletePurchase(${p.id})">🗑️ Delete</button>
+                </div>
+            `).join('');
+        }
+
+        // Switch tabs
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(tab + '-tab').classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        // Export data
+        function exportData() {
+            const data = {
+                purchases,
+                spotPrice,
+                exportDate: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'gold-tracker-backup.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showToast('Data exported!');
+        }
+
+        // Show toast
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Initialize
+        document.getElementById('date').valueAsDate = new Date();
+        loadData();
+    </script>
+</body>
+</html>
